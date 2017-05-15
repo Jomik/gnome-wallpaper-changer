@@ -9,6 +9,7 @@ const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 
+const Util = imports.misc.util;
 const Self = imports.misc.extensionUtils.getCurrentExtension();
 const Utils = Self.imports.utils;
 
@@ -46,11 +47,23 @@ const WallpaperChangerEntry = new Lang.Class({
     });
     this.actor.add_child(icon);
 
-    this.itemNextWallpaper = new PopupMenu.PopupMenuItem('Next Wallpaper');
-    this.menu.addMenuItem(this.itemNextWallpaper);
-    this.itemNextWallpaper.connect('activate', Lang.bind(this, function () {
+    // Construct items
+    const nextItem = new PopupMenu.PopupMenuItem('Next Wallpaper');
+    const settingsMenuItem = new PopupMenu.PopupMenuItem('Settings');
+
+    // Add items to menu
+    this.menu.addMenuItem(nextItem);
+    this.menu.addMenuItem(settingsMenuItem);
+
+    // Bind events
+    settingsMenuItem.connect('activate', Lang.bind(this, this._openSettings));
+    nextItem.connect('activate', Lang.bind(this, function () {
       this.provider.next(this._setWallpaper);
     }));
+  },
+
+  _openSettings: function () {
+    Util.spawn(["gnome-shell-extension-prefs", Self.uuid]);
   },
 
   _applySettings: function () {
