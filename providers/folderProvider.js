@@ -7,17 +7,42 @@ const Self = imports.misc.extensionUtils.getCurrentExtension();
 const Utils = Self.imports.utils;
 const WallpaperProvider = Self.imports.wallpaperProvider;
 
-const homePath = GLib.getenv("HOME");
+let WALLPAPER_PATH = "~/wallpapers";
 
 const Provider = new Lang.Class({
-  Extends: WallpaperProvider.Provider,
   Name: "Folder",
+  Extends: WallpaperProvider.Provider,
 
   _init: function () {
-    this.dir = Utils.makeDirectory(homePath + "/wallpapers");
-    this.wallpapers = this._getFolderWallpapers(this.dir);
-    this.monitor = this.dir.monitor_directory(Gio.FileMonitorFlags.NONE, null)
-    this.monitor.connect('changed', Lang.bind(this, this._wallpapersChanged));
+    this.settings = Utils.getSettings(this);
+    this._applySettings();
+    this.settings.connect('changed', Lang.bind(this, this._applySettings));
+
+  },
+
+  getPreferences: function () {
+    const prefs = this.parent();
+    this.settings.bind('wallpaper-path', prefs.get_object('field_wallpaper_path'), 'text', Gio.SettingsBindFlags.DEFAULT);
+    return prefs;
+  },
+
+  _applySettings: function () {
+    WALLPAPER_PATH = this.settings.get_string('wallpaper-path');
+
+    this._setupWallpaperDir();
+  },
+
+  _setupWallpaperDir: function () {
+    if (this.monitor) {
+      this.monitor.cancel();
+    }
+    this.monitor = null;
+    this.dir = Gio.File.new_for_path(Utils.realPath(WALLPAPER_PATH));
+    if (this.dir.query_exists(null)) {
+      this.wallpapers = this._getFolderWallpapers(this.dir);
+      this.monitor = this.dir.monitor_directory(Gio.FileMonitorFlags.NONE, null)
+      this.monitor.connect('changed', Lang.bind(this, this._wallpapersChanged));
+    }
   },
 
   _getFolderWallpapers: function (dir) {
@@ -45,13 +70,11 @@ const Provider = new Lang.Class({
 
     switch (event_type) {
       case Gio.FileMonitorEvent.DELETED:
-        // Remove file
         this.wallpapers = this.wallpapers.filter(function (f) {
           return f !== file.get_parse_name();
         });
         break;
       case Gio.FileMonitorEvent.CREATED:
-        // Add file
         const path = file.get_parse_name();
         const type = file.query_file_type(Gio.FileQueryInfoFlags.NONE, null);
         if (this._validWallpaper(type, path)) {

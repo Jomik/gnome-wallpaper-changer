@@ -1,9 +1,15 @@
 const Lang = imports.lang;
 
+const Gio = imports.gi.Gio;
+const Gtk = imports.gi.Gtk;
+
+const Self = imports.misc.extensionUtils.getCurrentExtension();
+
 const VALID_EXTENSIONS = ['jpg', 'jpeg', 'png'];
 
 const Provider = new Lang.Class({
-  Name: "WallpaperProvider",
+  Name: "WallpaperProviderBase",
+  Abstract: true,
   currentWallpaper: null,
   wallpapers: [],
 
@@ -26,5 +32,15 @@ const Provider = new Lang.Class({
 
   get: function () {
     return this.currentWallpaper;
+  },
+
+  getPreferences: function () {
+    let prefs = Self.dir.get_path() + '/preferences/' + this.__name__.toLowerCase() + '.xml';
+    let prefsFile = Gio.File.new_for_path(prefs);
+    if (!prefsFile.query_exists(null)) {
+      prefs = Self.dir.get_path() + '/preferences/provider.xml';
+    }
+    const builder = Gtk.Builder.new_from_file(prefs);
+    return builder;
   }
 });

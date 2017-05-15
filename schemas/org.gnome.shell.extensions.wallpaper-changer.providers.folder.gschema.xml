@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<schemalist gettext-domain="gnome-shell-extensions">
+  <schema id="org.gnome.shell.extensions.wallpaper-changer.providers.folder"
+      path="/org/gnome/shell/extensions/wallpaper-changer/">
+    <key name="wallpaper-path" type="s">
+      <default>"~/wallpapers"</default>
+      <summary>Path to wallpaper folder</summary>
+      <description>The path to the directory containing the wallpapers</description>
+    </key>
+  </schema>
+</schemalist>

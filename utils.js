@@ -1,29 +1,66 @@
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 
 const Self = imports.misc.extensionUtils.getCurrentExtension();
-const FolderProvider = Self.imports.providers.folderProvider.Provider;
 
+const homePath = GLib.getenv("HOME");
+
+let providers;
 let currentProviderType;
 let currentProvider;
 
-const providers = {
-  "Folder": new FolderProvider()
+function getProviders() {
+  if (providers) {
+    return providers;
+  }
+
+  providers = {};
+  for (let p in Self.imports.providers) {
+    const provider = new Self.imports.providers[p].Provider();
+    if (provider instanceof Self.imports.wallpaperProvider.Provider) {
+      providers[provider.__name__] = provider;
+    }
+  }
+  return providers;
 }
 
 function getProvider(providerType) {
   if (providerType !== currentProviderType) {
-    currentProvider = providers[providerType] || null;
+    currentProvider = this.getProviders()[providerType] || null;
   }
   return currentProvider;
 }
 
-function makeDirectory(path) {
-  const dir = Gio.File.new_for_path(path);
-
-  if (!dir.query_exists(null)) {
-    dir.make_directory_with_parents(null);
-  } else if (dir.query_file_type(Gio.FileQueryInfoFlags.NONE, null) !== Gio.FileType.DIRECTORY) {
-    throw new Error('Not a directory: ' + path);
+function getSettings(provider) {
+  let sub = "";
+  if (provider) {
+    sub = ".providers." + provider.__name__.toLowerCase();
   }
-  return dir;
+  const schema = 'org.gnome.shell.extensions.wallpaper-changer' + sub;
+
+  const GioSSS = Gio.SettingsSchemaSource;
+
+  const schemaDir = Self.dir.get_child('schemas');
+  let schemaSource;
+  if (schemaDir.query_exists(null)) {
+    schemaSource = GioSSS.new_from_directory(schemaDir.get_path(),
+      GioSSS.get_default(),
+      false);
+  } else {
+    schemaSource = GioSSS.get_default();
+  }
+
+  const schemaObj = schemaSource.lookup(schema, true);
+  if (!schemaObj) {
+    throw new Error('Schema ' + schema + ' could not be found for extension ' +
+      Self.metadata.uuid + '. Please check your installation.');
+  }
+
+  return new Gio.Settings({ settings_schema: schemaObj });
+}
+
+function realPath(path) {
+  return path.startsWith('~')
+    ? homePath + path.slice(1)
+    : path;
 }

@@ -1,6 +1,7 @@
 const Lang = imports.lang;
 
 const Gio = imports.gi.Gio;
+const Gtk = imports.gi.Gtk;
 const GLib = imports.gi.GLib;
 const St = imports.gi.St;
 
@@ -12,9 +13,12 @@ const Self = imports.misc.extensionUtils.getCurrentExtension();
 const Utils = Self.imports.utils;
 
 let TIMER_MINUTES = 0;
-let TIMER_HOURS = 1;
+let TIMER_HOURS = 0;
 
 let panelEntry;
+
+function init() {
+}
 
 function enable() {
   panelEntry = new WallpaperChangerEntry();
@@ -32,7 +36,9 @@ const WallpaperChangerEntry = new Lang.Class({
   _init: function () {
     this.parent(0, "WallpaperChangerEntry");
 
+    this.settings = Utils.getSettings();
     this._applySettings();
+    this.settings.connect('changed', Lang.bind(this, this._applySettings));
 
     const icon = new St.Icon({
       icon_name: 'preferences-desktop-wallpaper-symbolic',
@@ -45,17 +51,31 @@ const WallpaperChangerEntry = new Lang.Class({
     this.itemNextWallpaper.connect('activate', Lang.bind(this, function () {
       this.provider.next(this._setWallpaper);
     }));
-
-    GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT,
-      TIMER_MINUTES * 60 + TIMER_HOURS * 3600,
-      Lang.bind(this, function () {
-        this.provider.next(this._setWallpaper);
-        return true;
-      }))
   },
 
   _applySettings: function () {
-    this.provider = Utils.getProvider("Folder");
+    this.provider = Utils.getProvider(this.settings.get_string('provider'));
+    TIMER_MINUTES = this.settings.get_int('minutes');
+    TIMER_HOURS = this.settings.get_int('hours');
+
+    this._setTimer();
+  },
+
+  _setTimer: function () {
+    if (this.timer) {
+      GLib.Source.remove(this.timer);
+    }
+
+    if (TIMER_HOURS + TIMER_MINUTES > 0) {
+      this.timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT,
+        TIMER_MINUTES * 60 + TIMER_HOURS * 3600,
+        Lang.bind(this, function () {
+          this.provider.next(this._setWallpaper);
+          return true;
+        }));
+    } else {
+      this.timer = null;
+    }
   },
 
   _setWallpaper: function (path) {
