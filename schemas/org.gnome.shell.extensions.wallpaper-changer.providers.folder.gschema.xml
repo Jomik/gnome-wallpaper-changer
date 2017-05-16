@@ -52,7 +52,7 @@
       <description>Fetch papers with this ratio</description>
     </key>
     <key name="sorting" type="s">
-      <default>"favorites"</default>
+      <default>"random"</default>
       <summary>Sorting</summary>
       <description>Sort the pages based on</description>
     </key>

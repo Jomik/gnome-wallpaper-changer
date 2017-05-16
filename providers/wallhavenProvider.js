@@ -9,12 +9,12 @@ const Utils = Self.imports.utils;
 const WallpaperProvider = Self.imports.wallpaperProvider;
 
 const OPTIONS = {
-  query: "wolf",
+  query: "",
   categories: '100',
   purity: '100',
   resolution: "",
   ratio: "16x9",
-  sorting: "favorites",
+  sorting: "random",
   order: "desc",
 
   toParameterString: function () {
