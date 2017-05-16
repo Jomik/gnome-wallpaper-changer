@@ -26,6 +26,12 @@ const Provider = new Lang.Class({
     return prefs;
   },
 
+  destroy: function () {
+    if (this.monitor) {
+      this.monitor.cancel();
+    }
+  },
+
   _applySettings: function () {
     WALLPAPER_PATH = this.settings.get_string('wallpaper-path');
 

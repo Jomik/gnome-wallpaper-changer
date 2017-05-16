@@ -5,7 +5,7 @@ const Gtk = imports.gi.Gtk;
 
 const Self = imports.misc.extensionUtils.getCurrentExtension();
 
-const VALID_EXTENSIONS = ['jpg', 'jpeg', 'png'];
+const VALID_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
 
 const Provider = new Lang.Class({
   Name: "WallpaperProviderBase",
@@ -42,5 +42,8 @@ const Provider = new Lang.Class({
     }
     const builder = Gtk.Builder.new_from_file(prefs);
     return builder;
+  },
+
+  destroy: function () {
   }
 });

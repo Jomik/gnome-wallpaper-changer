@@ -16,17 +16,26 @@ function getProviders() {
 
   providers = {};
   for (let p in Self.imports.providers) {
-    const provider = new Self.imports.providers[p].Provider();
-    if (provider instanceof Self.imports.wallpaperProvider.Provider) {
-      providers[provider.__name__] = provider;
-    }
+    const provider = Self.imports.providers[p].Provider;
+    const providerString = provider.toString();
+    const name = providerString.substring(18, providerString.length - 1);
+    providers[name] = provider;
   }
   return providers;
 }
 
 function getProvider(providerType) {
   if (providerType !== currentProviderType) {
-    currentProvider = this.getProviders()[providerType] || null;
+    if (currentProvider) {
+      currentProvider.destroy();
+    }
+    
+    const provider = this.getProviders()[providerType];
+    if (provider) {
+      currentProvider = new provider();
+    } else {
+      currentProvider = null;
+    }
   }
   return currentProvider;
 }
