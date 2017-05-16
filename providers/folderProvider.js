@@ -14,6 +14,7 @@ const Provider = new Lang.Class({
   Extends: WallpaperProvider.Provider,
 
   _init: function () {
+    this.parent();
     this.settings = Utils.getSettings(this);
     this._applySettings();
     this.settings.connect('changed', Lang.bind(this, this._applySettings));

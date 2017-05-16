@@ -31,27 +31,34 @@ function buildPrefsWidget() {
   if (providerList.get_active() === -1) {
     providerList.set_active(0);
   }
-  
-  _updateProviderTab(main)();
+
+  _updateProviderTab(main, true)();
   settings.connect('changed::provider', Lang.bind(this, _updateProviderTab(main)));
 
   widget.show_all();
   return widget;
 }
 
-function _updateProviderTab(main) {
+function _updateProviderTab(main, dry) {
   return function () {
     const providerPlace = main.get_object('provider_prefs');
     const providerPrefs = Utils.getProvider(settings.get_string('provider')).getPreferences().get_object('prefs_page');
-    providerPlace.foreach(function (widget) {
-      providerPlace.remove(widget);
+    providerPlace.forall(function (child) {
+      providerPlace.remove(child);
+      child.destroy();
     });
     if (providerPrefs) {
-      providerPrefs.forall(function (widget) {
-        providerPrefs.remove(widget);
-        providerPlace.add(widget);
+      const children = [];
+      providerPrefs.forall(function (child) {
+        providerPrefs.remove(child);
+        children.unshift(child);
       });
-      providerPlace.show_all();
+      children.forEach(function (child) {
+        providerPlace.add(child);
+      });
+      if (!dry) {
+        providerPlace.show_all();
+      }
     }
   }
 }

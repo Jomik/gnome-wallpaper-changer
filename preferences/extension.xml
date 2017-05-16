@@ -18,7 +18,7 @@
   <property name="expand">true</property>
 
 	<child>
-		<object class="GtkGrid">
+		<object class="GtkGrid" id="basic_prefs">
 			<property name="margin">18</property>
 			<property name="row-spacing">18</property>
 			<property name="row-homogeneous">false</property>
@@ -64,7 +64,6 @@
 							</child>
 							<child>
 								<object class="GtkComboBoxText" id="field_provider">
-								<property name="visible">True</property>
 								</object>
 							</child>
 						</object>

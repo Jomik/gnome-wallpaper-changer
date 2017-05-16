@@ -3,6 +3,8 @@ const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 
+const Signals = imports.signals;
+
 const Self = imports.misc.extensionUtils.getCurrentExtension();
 
 const Provider = new Lang.Class({
@@ -10,6 +12,10 @@ const Provider = new Lang.Class({
   Abstract: true,
   currentWallpaper: null,
   wallpapers: [],
+
+  _init: function () {
+    Signals.addSignalMethods(this);
+  },
 
   next: function (callback) {
     function notCurrent(file) {

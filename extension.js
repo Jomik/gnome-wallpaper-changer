@@ -79,6 +79,12 @@ const WallpaperChangerEntry = new Lang.Class({
   _applyProvider: function () {
     this.provider = Utils.getProvider(this.settings.get_string('provider'));
     this.provider.next(this._setWallpaper);
+    this.provider.connect('wallpapers-changed', Lang.bind(this, function (provider) {
+      if (provider === this.provider) {
+        this.provider.next(this._setWallpaper);
+        this._resetTimer();
+      }
+    }));
   },
 
   _applyTimer: function () {
@@ -99,7 +105,8 @@ const WallpaperChangerEntry = new Lang.Class({
         Lang.bind(this, function () {
           this.provider.next(this._setWallpaper);
           return true;
-        }));
+        })
+      );
     } else {
       this.timer = null;
     }

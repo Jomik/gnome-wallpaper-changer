@@ -1,0 +1,295 @@
+<?xml version="1.0"?>
+
+<interface domain="wallpaper-changer">
+
+<object class="GtkGrid" id="prefs_page">
+	<property name="margin">18</property>
+	<property name="row-spacing">18</property>
+	<property name="row-homogeneous">false</property>
+	<property name="orientation">vertical</property>
+
+	<child>
+		<object class="GtkVBox">
+		<property name="spacing">6</property>
+
+			<child>
+				<object class="GtkBox">
+					<property name="margin-left">12</property>
+					<property name="spacing">12</property>
+					<child>
+						<object class="GtkLabel">
+							<property name="label" translatable="yes">Search query</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					<child>
+						<object class="GtkEntry" id="field_query">
+							<property name="hexpand">true</property>
+						</object>
+					</child>
+				</object>
+			</child>
+		</object>
+	</child>
+
+	<child>
+		<object class="GtkVBox">
+		<property name="spacing">6</property>
+
+			<child>
+				<object class="GtkBox">
+					<property name="margin-left">12</property>
+					<property name="spacing">12</property>
+					<child>
+						<object class="GtkLabel">
+							<property name="label" translatable="yes">Categories</property>
+							<property name="hexpand">true</property>
+							<property name="halign">1</property>
+							<attributes>
+								<attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+							</attributes>
+						</object>
+					</child>
+				</object>
+			</child>
+
+			<child>
+				<object class="GtkBox">
+					<property name="margin-left">12</property>
+					<property name="spacing">12</property>
+					<child>
+						<object class="GtkLabel">
+							<property name="label" translatable="yes">General</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					<child>
+						<object class="GtkSwitch" id="field_general">
+							<property name="hexpand">true</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					<child>
+						<object class="GtkLabel">
+							<property name="label" translatable="yes">Anime</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					<child>
+						<object class="GtkSwitch" id="field_anime">
+							<property name="hexpand">true</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					
+					<child>
+						<object class="GtkLabel">
+							<property name="label" translatable="yes">People</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					<child>
+						<object class="GtkSwitch" id="field_people">
+							<property name="hexpand">true</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+				</object>
+			</child>
+
+		</object>
+	</child>
+
+	<child>
+		<object class="GtkVBox">
+		<property name="spacing">6</property>
+
+			<child>
+				<object class="GtkBox">
+					<property name="margin-left">12</property>
+					<property name="spacing">12</property>
+					<child>
+						<object class="GtkLabel">
+							<property name="label" translatable="yes">Purity</property>
+							<property name="hexpand">true</property>
+							<property name="halign">1</property>
+							<attributes>
+								<attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+							</attributes>
+						</object>
+					</child>
+				</object>
+			</child>
+
+			<child>
+				<object class="GtkBox">
+					<property name="margin-left">12</property>
+					<property name="spacing">12</property>
+					<child>
+						<object class="GtkLabel">
+							<property name="label" translatable="yes">SFW</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					<child>
+						<object class="GtkSwitch" id="field_sfw">
+							<property name="hexpand">true</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					<child>
+						<object class="GtkLabel">
+							<property name="label" translatable="yes">Sketchy</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					<child>
+						<object class="GtkSwitch" id="field_sketchy">
+							<property name="hexpand">true</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					
+					<child>
+						<object class="GtkLabel">
+							<property name="label" translatable="yes">NSFW</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					<child>
+						<object class="GtkSwitch" id="field_nsfw">
+							<property name="hexpand">true</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+				</object>
+			</child>
+		</object>
+	</child>
+
+	<child>
+		<object class="GtkVBox">
+		<property name="spacing">6</property>
+
+			<child>
+				<object class="GtkBox">
+					<property name="margin-left">12</property>
+					<property name="spacing">12</property>
+					<child>
+						<object class="GtkLabel">
+							<property name="label" translatable="yes">Miscellaneous</property>
+							<property name="hexpand">true</property>
+							<property name="halign">1</property>
+							<attributes>
+								<attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+							</attributes>
+						</object>
+					</child>
+				</object>
+			</child>
+
+			<child>
+				<object class="GtkBox">
+					<property name="margin-left">12</property>
+					<property name="spacing">12</property>
+					<child>
+						<object class="GtkLabel">
+							<property name="label" translatable="yes">Resolution</property>
+							<property name="hexpand">true</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					<child>
+						<object class="GtkComboBoxText" id="field_resolution">
+							<items>
+								<item translatable="no" id="">None</item>
+								<item translatable="no" id="1366x768">1366x768</item>
+								<item translatable="no" id="1280x800">1280x800</item>
+								<item translatable="no" id="1280x960">1280x960</item>
+								<item translatable="no" id="1440x900">1440x900</item>
+								<item translatable="no" id="1600x900">1600x900</item>
+								<item translatable="no" id="1280x1024">1280x1024</item>
+								<item translatable="no" id="1680x1050">1680x1050</item>
+								<item translatable="no" id="1920x1080">1920x1080 Full HD</item>
+								<item translatable="no" id="3840x1080">3840x1080</item>
+								<item translatable="no" id="5760x1080">5760x1080</item>
+								<item translatable="no" id="1600x1200">1600x1200</item>
+								<item translatable="no" id="1920x1200">1920x1200</item>
+								<item translatable="no" id="2560x1440">2560x1440</item>
+								<item translatable="no" id="2560x1600">2560x1600</item>
+								<item translatable="no" id="3840x2160">3840x2160 4k UHD-1</item>
+								<item translatable="no" id="5120x2880">5120x2880 5k UHD+</item>
+							</items>
+						</object>
+					</child>
+				</object>
+			</child>
+
+			<child>
+				<object class="GtkBox">
+					<property name="margin-left">12</property>
+					<property name="spacing">12</property>
+					<child>
+						<object class="GtkLabel">
+							<property name="label" translatable="yes">Ratio</property>
+							<property name="hexpand">true</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					<child>
+						<object class="GtkComboBoxText" id="field_ratio">
+							<items>
+								<item translatable="no" id="">None</item>
+								<item translatable="no" id="4x3">4x3</item>
+								<item translatable="no" id="5x4">5x4</item>
+								<item translatable="no" id="16x9">16x9</item>
+								<item translatable="no" id="16x10">16x10</item>
+								<item translatable="no" id="21x9">21x9</item>
+								<item translatable="no" id="32x9">32x9</item>
+								<item translatable="no" id="48x9">48x9</item>
+								<item translatable="no" id="9x16">9x16</item>
+								<item translatable="no" id="10x16">10x16</item>
+							</items>
+						</object>
+					</child>
+				</object>
+			</child>
+
+			<child>
+				<object class="GtkBox">
+					<property name="margin-left">12</property>
+					<property name="spacing">12</property>
+					<child>
+						<object class="GtkLabel">
+							<property name="label" translatable="yes">Sorting</property>
+							<property name="hexpand">true</property>
+							<property name="halign">1</property>
+						</object>
+					</child>
+					<child>
+						<object class="GtkComboBoxText" id="field_sorting">
+							<items>
+								<item translatable="yes" id="relevance">Relevance</item>
+								<item translatable="yes" id="random">Random</item>
+								<item translatable="yes" id="date_added">Date Added</item>
+								<item translatable="yes" id="views">Views</item>
+								<item translatable="yes" id="favorites">Favorites</item>
+							</items>
+						</object>
+					</child>
+					<child>
+						<object class="GtkComboBoxText" id="field_order">
+							<items>
+								<item translatable="yes" id="asc">Ascending</item>
+								<item translatable="yes" id="desc">Descending</item>
+							</items>
+						</object>
+					</child>
+				</object>
+			</child>
+
+		</object>
+	</child>
+</object>
+
+</interface>
