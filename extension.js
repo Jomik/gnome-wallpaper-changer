@@ -67,7 +67,9 @@ const WallpaperChangerEntry = new Lang.Class({
     // Bind events
     settingsMenuItem.connect('activate', Lang.bind(this, this._openSettings));
     nextItem.connect('activate', Lang.bind(this, function () {
-      this.provider.next(this._setWallpaper);
+      if (this.provider) {
+        this.provider.next(this._setWallpaper);
+      }
       this._resetTimer();
     }));
   },
@@ -78,7 +80,9 @@ const WallpaperChangerEntry = new Lang.Class({
 
   _applyProvider: function () {
     this.provider = Utils.getProvider(this.settings.get_string('provider'));
-    this.provider.next(this._setWallpaper);
+    if (this.provider) {
+      this.provider.next(this._setWallpaper);
+    }
   },
 
   _applyTimer: function () {
@@ -97,7 +101,9 @@ const WallpaperChangerEntry = new Lang.Class({
       this.timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT,
         TIMER.toSeconds(),
         Lang.bind(this, function () {
-          this.provider.next(this._setWallpaper);
+          if (this.provider) {
+            this.provider.next(this._setWallpaper);
+          }
           return true;
         }));
     } else {

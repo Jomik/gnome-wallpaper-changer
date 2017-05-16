@@ -69,7 +69,10 @@ const Provider = new Lang.Class({
     if (this.currentWallpaper) {
       Gio.File.new_for_path(this.currentWallpaper).delete_async(GLib.PRIORITY_DEFAULT, null,
         function (file, res) {
-          file.delete_finish(res);
+          try {
+            file.delete_finish(res);
+          } catch (e) {
+          }
         });
     }
   },
