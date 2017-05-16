@@ -5,8 +5,6 @@ const Gtk = imports.gi.Gtk;
 
 const Self = imports.misc.extensionUtils.getCurrentExtension();
 
-const VALID_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
-
 const Provider = new Lang.Class({
   Name: "WallpaperProviderBase",
   Abstract: true,

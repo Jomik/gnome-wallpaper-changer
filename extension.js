@@ -44,8 +44,11 @@ const WallpaperChangerEntry = new Lang.Class({
     this.parent(0, "WallpaperChangerEntry");
 
     this.settings = Utils.getSettings();
-    this._applySettings();
-    this.settings.connect('changed', Lang.bind(this, this._applySettings));
+    this._applyProvider();
+    this._applyTimer();
+    this.settings.connect('changed::minutes', Lang.bind(this, this._applyTimer));
+    this.settings.connect('changed::hours', Lang.bind(this, this._applyTimer));
+    this.settings.connect('changed::provider', Lang.bind(this, this._applyProvider));
 
     const icon = new St.Icon({
       icon_name: 'preferences-desktop-wallpaper-symbolic',
@@ -73,8 +76,12 @@ const WallpaperChangerEntry = new Lang.Class({
     Util.spawn(["gnome-shell-extension-prefs", Self.uuid]);
   },
 
-  _applySettings: function () {
+  _applyProvider: function () {
     this.provider = Utils.getProvider(this.settings.get_string('provider'));
+    this.provider.next(this._setWallpaper);
+  },
+
+  _applyTimer: function () {
     TIMER.minutes = this.settings.get_int('minutes');
     TIMER.hours = this.settings.get_int('hours');
 
