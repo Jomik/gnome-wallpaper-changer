@@ -13,8 +13,14 @@ const Util = imports.misc.util;
 const Self = imports.misc.extensionUtils.getCurrentExtension();
 const Utils = Self.imports.utils;
 
-let TIMER_MINUTES = 0;
-let TIMER_HOURS = 0;
+const TIMER = {
+  minutes: 0,
+  hours: 0,
+
+  toSeconds: function () {
+    return this.minutes * 60 + this.hours * 3600
+  }
+}
 
 let panelEntry;
 
@@ -59,6 +65,7 @@ const WallpaperChangerEntry = new Lang.Class({
     settingsMenuItem.connect('activate', Lang.bind(this, this._openSettings));
     nextItem.connect('activate', Lang.bind(this, function () {
       this.provider.next(this._setWallpaper);
+      this._resetTimer();
     }));
   },
 
@@ -68,20 +75,20 @@ const WallpaperChangerEntry = new Lang.Class({
 
   _applySettings: function () {
     this.provider = Utils.getProvider(this.settings.get_string('provider'));
-    TIMER_MINUTES = this.settings.get_int('minutes');
-    TIMER_HOURS = this.settings.get_int('hours');
+    TIMER.minutes = this.settings.get_int('minutes');
+    TIMER.hours = this.settings.get_int('hours');
 
-    this._setTimer();
+    this._resetTimer();
   },
 
-  _setTimer: function () {
+  _resetTimer: function () {
     if (this.timer) {
       GLib.Source.remove(this.timer);
     }
 
-    if (TIMER_HOURS + TIMER_MINUTES > 0) {
+    if (TIMER.toSeconds() > 0) {
       this.timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT,
-        TIMER_MINUTES * 60 + TIMER_HOURS * 3600,
+        TIMER.toSeconds(),
         Lang.bind(this, function () {
           this.provider.next(this._setWallpaper);
           return true;
