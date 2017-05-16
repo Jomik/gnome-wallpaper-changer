@@ -19,7 +19,7 @@
     </key>
 
     <key name="provider" type="s">
-      <default>"None"</default>
+      <default>"Folder"</default>
       <summary>Provider to use</summary>
       <description>The provider implementation to query for new wallpapers</description>
     </key>
