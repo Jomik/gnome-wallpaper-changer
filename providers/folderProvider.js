@@ -7,7 +7,7 @@ const Self = imports.misc.extensionUtils.getCurrentExtension();
 const Utils = Self.imports.utils;
 const WallpaperProvider = Self.imports.wallpaperProvider;
 
-let WALLPAPER_PATH = "~/wallpapers";
+let WALLPAPER_PATH = "/usr/share/backgrounds/gnome";
 
 const Provider = new Lang.Class({
   Name: "Folder",

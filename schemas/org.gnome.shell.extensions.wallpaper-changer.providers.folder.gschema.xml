@@ -1,65 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <schemalist gettext-domain="gnome-shell-extensions">
-  <schema id="org.gnome.shell.extensions.wallpaper-changer.providers.wallhaven"
+  <schema id="org.gnome.shell.extensions.wallpaper-changer.providers.folder"
       path="/org/gnome/shell/extensions/wallpaper-changer/">
-    <key name="query" type="s">
-      <default>""</default>
-      <summary>Search query</summary>
-      <description>The query to pass to wallhaven when fetching wallpapers</description>
-    </key>
-
-    <key name="category-general" type="b">
-      <default>true</default>
-      <summary>Enable general</summary>
-      <description>Enable the general category for fetching wallpapers</description>
-    </key>
-    <key name="category-anime" type="b">
-      <default>false</default>
-      <summary>Enable anime</summary>
-      <description>Enable the anime category for fetching wallpapers</description>
-    </key>
-    <key name="category-people" type="b">
-      <default>false</default>
-      <summary>Enable people</summary>
-      <description>Enable the people category for fetching wallpapers</description>
-    </key>
-
-    <key name="purity-sfw" type="b">
-      <default>true</default>
-      <summary>Enable SFW</summary>
-      <description>Enable the SFW purity level for fetching wallpapers</description>
-    </key>
-    <key name="purity-sketchy" type="b">
-      <default>false</default>
-      <summary>Enable sketchy</summary>
-      <description>Enable the sketchy purity level for fetching wallpapers</description>
-    </key>
-    <key name="purity-nsfw" type="b">
-      <default>false</default>
-      <summary>Enable NSFW</summary>
-      <description>Enable the NSFW purity level for fetching wallpapers</description>
-    </key>
-
-    <key name="resolution" type="s">
-      <default>""</default>
-      <summary>Resolution</summary>
-      <description>Fetch papers with this resolution</description>
-    </key>
-    <key name="ratio" type="s">
-      <default>"16x9"</default>
-      <summary>Ratio</summary>
-      <description>Fetch papers with this ratio</description>
-    </key>
-    <key name="sorting" type="s">
-      <default>"random"</default>
-      <summary>Sorting</summary>
-      <description>Sort the pages based on</description>
-    </key>
-    <key name="order" type="s">
-      <default>"desc"</default>
-      <summary>Order</summary>
-      <description>Order of the pages</description>
+    <key name="wallpaper-path" type="s">
+      <default>"/usr/share/backgrounds/gnome"</default>
+      <summary>Path to wallpaper folder</summary>
+      <description>The path to the directory containing the wallpapers</description>
     </key>
   </schema>
 </schemalist>
