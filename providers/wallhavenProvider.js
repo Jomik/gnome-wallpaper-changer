@@ -41,24 +41,32 @@ const Provider = new Lang.Class({
     this.dir = Utils.makeDirectory(Self.path + "/" + this.__name__);
     this.wallpapers = Utils.getFolderWallpapers(this.dir);
     this.settings.connect('changed', Lang.bind(this, this._applySettings));
+    this._applySettings();
   },
 
   next: function (callback) {
+    const newWallpaper = Lang.bind(this, function () {
+      this._deleteWallpaper(this.currentWallpaper);
+      this.currentWallpaper = this.wallpapers.shift();
+      callback(this.currentWallpaper);
+    });
+
     if (this.wallpapers.length === 0) {
       let called = false;
       this._downloadPage(++this.page, Lang.bind(this, function (path) {
         this.wallpapers.push(path);
         if (!called) {
           called = true;
-          this._deleteWallpaper(this.currentWallpaper);
-          this.currentWallpaper = this.wallpapers.shift();
-          callback(this.currentWallpaper);
+          newWallpaper()
         }
-      }));
+      }, Lang.bind(this, function () {
+        if (this.page > 1) {
+          this.page = 0;
+          this.next(callback);
+        }
+      })));
     } else {
-      this._deleteWallpaper(this.currentWallpaper);
-      this.currentWallpaper = this.wallpapers.shift();
-      callback(this.currentWallpaper);
+      newWallpaper()
     }
   },
 
@@ -118,6 +126,7 @@ const Provider = new Lang.Class({
   },
 
   _resetWallpapers: function () {
+    this.page = 0;
     let path;
     while (path = this.wallpapers.shift()) {
       this._deleteWallpaper(path);
@@ -137,7 +146,7 @@ const Provider = new Lang.Class({
     }
   },
 
-  _downloadPage: function (page, callback) {
+  _downloadPage: function (page, callback, no_match_callback) {
     const request = this.session.request_http('GET',
       'https://alpha.wallhaven.cc/search?' + OPTIONS.toParameterString() + '&page=' + page);
     const message = request.get_message();
@@ -148,12 +157,18 @@ const Provider = new Lang.Class({
       }
 
       const matches = message.response_body.data.match(/data-wallpaper-id="(\d+)"/g);
-      const ids = matches.map(function (elem) {
-        return elem.match(/\d+/);
-      });
-      ids.forEach(Lang.bind(this, function (id) {
-        this._downloadWallpaper(id, callback);
-      }));
+      if (matches) {
+        const ids = matches.map(function (elem) {
+          return elem.match(/\d+/);
+        });
+        ids.forEach(Lang.bind(this, function (id) {
+          this._downloadWallpaper(id, callback);
+        }));
+      } else {
+        if (no_match_callback) {
+          no_match_callback(page);
+        }
+      }
     }));
   },
 
