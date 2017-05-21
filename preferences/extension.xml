@@ -106,6 +106,26 @@
 							</child>
 						</object>
 					</child>
+
+					<child>
+						<object class="GtkBox">
+							<property name="margin-left">12</property>
+							<property name="spacing">12</property>
+							<child>
+								<object class="GtkLabel">
+									<property name="label" translatable="yes">Debugging</property>
+									<property name="halign">1</property>
+									<property name="hexpand">true</property>
+								</object>
+							</child>
+							<child>
+								<object class="GtkSwitch" id="field_debug">
+									<property name="halign">1</property>
+								</object>
+							</child>
+						</object>
+					</child>
+					
 				</object>
 			</child>
 		</object>

@@ -1,3 +1,10 @@
+let DEBUG = false;
+function debug(message, name) {
+  if (!DEBUG) return;
+  name = name ? ' - ' + name : '';
+  global.log('[wallpaper-changer' + name + '] ' + message);
+}
+
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 
@@ -5,7 +12,7 @@ const Self = imports.misc.extensionUtils.getCurrentExtension();
 
 const VALID_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
 
-const HOME = GLib.getenv("HOME");
+const HOME = GLib.getenv('HOME');
 
 let providers;
 let currentProviderType;
@@ -43,9 +50,9 @@ function getProvider(providerType) {
 }
 
 function getSettings(provider) {
-  let sub = "";
+  let sub = '';
   if (provider) {
-    sub = ".providers." + provider.__name__.toLowerCase();
+    sub = '.providers.' + provider.__name__.toLowerCase();
   }
   const schema = 'org.gnome.shell.extensions.wallpaper-changer' + sub;
 

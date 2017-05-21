@@ -23,5 +23,11 @@
       <summary>Provider to use</summary>
       <description>The provider implementation to query for new wallpapers</description>
     </key>
+
+    <key name="debug" type="b">
+      <default>false</default>
+      <summary>Enable debugging</summary>
+      <description></description>
+    </key>
   </schema>
 </schemalist>

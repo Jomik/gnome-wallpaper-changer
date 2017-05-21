@@ -27,6 +27,7 @@ function buildPrefsWidget() {
   settings.bind('minutes', main.get_object('field_minutes'), 'value', Gio.SettingsBindFlags.DEFAULT);
   settings.bind('hours', main.get_object('field_hours'), 'value', Gio.SettingsBindFlags.DEFAULT);
   settings.bind('provider', main.get_object('field_provider'), 'active-id', Gio.SettingsBindFlags.DEFAULT);
+  settings.bind('debug', main.get_object('field_debug'), 'active', Gio.SettingsBindFlags.DEFAULT);
 
   if (providerList.get_active() === -1) {
     providerList.set_active(0);

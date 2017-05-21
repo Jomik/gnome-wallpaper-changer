@@ -9,22 +9,22 @@ const Utils = Self.imports.utils;
 const WallpaperProvider = Self.imports.wallpaperProvider;
 
 const OPTIONS = {
-  query: "",
+  query: '',
   categories: '100',
   purity: '100',
-  resolution: "",
-  ratio: "16x9",
-  sorting: "random",
-  order: "desc",
+  resolution: '',
+  ratio: '16x9',
+  sorting: 'random',
+  order: 'desc',
 
   toParameterString: function () {
-    return "categories=" + this.categories
-      + "&purity=" + this.purity
-      + "&resolutions=" + this.resolution
-      + "&ratios=" + this.ratio
-      + "&sorting=" + this.sorting
-      + "&order=" + this.order
-      + "&q=" + this.query;
+    return 'categories=' + this.categories
+      + '&purity=' + this.purity
+      + '&resolutions=' + this.resolution
+      + '&ratios=' + this.ratio
+      + '&sorting=' + this.sorting
+      + '&order=' + this.order
+      + '&q=' + this.query;
   }
 }
 
@@ -38,32 +38,41 @@ const Provider = new Lang.Class({
     this.settings = Utils.getSettings(this);
     this.session = new Soup.Session();
     this.page = 0;
-    this.dir = Utils.makeDirectory(Self.path + "/" + this.__name__);
+    this.dir = Utils.makeDirectory(Self.path + '/' + this.__name__);
     this.wallpapers = Utils.getFolderWallpapers(this.dir);
     this.settings.connect('changed', Lang.bind(this, this._applySettings));
     this._applySettings();
   },
 
-  next: function (callback) {
-    const newWallpaper = Lang.bind(this, function () {
+  next: function (callback, parent) {
+    Utils.debug('next - parent?' + parent, this.__name__);
+    if (parent) {
       this.parent(callback);
+      return;
+    }
+    const newWallpaper = Lang.bind(this, function () {
+      Utils.debug('newWallpaper', this.__name__);
+      this.next(callback, true);
       this.wallpapers = this.wallpapers.filter(Lang.bind(this, function (w) {
         return this.currentWallpaper !== w;
       }));
-      global.log(this.wallpapers.length + " remaining");
     });
 
     if (this.wallpapers.length === 0) {
+      Utils.debug('get new wallpapers', this.__name__);
       let called = false;
       this._requestWallpapersOnPage(++this.page, Lang.bind(this, function (ids) {
         if (ids.length > 0) {
+          Utils.debug('new ids: ' + ids.length, this.__name__);
           const oldWallpapers = Utils.getFolderWallpapers(this.dir);
 
           let called = false;
           ids.forEach(Lang.bind(this, function (id) {
             this._downloadWallpaper(id, Lang.bind(this, function (path) {
+              Utils.debug('_downloadWallpaper callback: ' + path, this.__name__);
               if (path) {
                 if (!called) {
+                  Utils.debug('first call', this.__name__);
                   called = true;
                   this.currentWallpaper = path;
                   callback(this.currentWallpaper);
@@ -72,16 +81,18 @@ const Provider = new Lang.Class({
                     this._deleteWallpaper(wallpaper);
                   }));
                 } else {
+                  Utils.debug('adding', this.__name__);
                   this.wallpapers.push(path);
                 }
               }
             }));
           }));
         } else if (this.page > 1) {
+          Utils.debug('trying page 0', this.__name__);
           this.page = 0;
           this.next(callback);
         } else {
-          global.log("Couldn't get new wallpapers, reusing old.");
+          global.log('Couldn\'t get new wallpapers, reusing old.');
           this.wallpapers = Utils.getFolderWallpapers(this.dir);
           newWallpaper();
         }
@@ -113,10 +124,13 @@ const Provider = new Lang.Class({
   },
 
   destroy: function () {
+    this.parent();
     this.session.abort();
   },
 
   _applySettings: function () {
+    Utils.debug('_applySettings', this.__name__);
+
     if (this.settingsTimer) {
       GLib.Source.remove(this.settingsTimer);
     }
@@ -147,27 +161,28 @@ const Provider = new Lang.Class({
   },
 
   _resetWallpapers: function () {
+    Utils.debug('_resetWallpapers', this.__name__);
     this.page = 0;
-    let path;
-    while (path = this.wallpapers.shift()) {
-      this._deleteWallpaper(path);
-    }
+    this.wallpapers = [];
     this.emit('wallpapers-changed', this);
   },
 
   _deleteWallpaper: function (wallpaper) {
+    Utils.debug('_deleteWallpaper ' + wallpaper, this.__name__);
     if (wallpaper) {
       Gio.File.new_for_path(wallpaper).delete_async(GLib.PRIORITY_DEFAULT, null,
-        function (file, res) {
+        Lang.bind(this, function (file, res) {
           try {
             file.delete_finish(res);
           } catch (e) {
+            Utils.debug(e, this.__name__);
           }
-        });
+        }));
     }
   },
 
   _requestWallpapersOnPage: function (page, callback, no_match_callback) {
+    Utils.debug('_requestWallpapersOnPage@' + page, this.__name__);
     let ids = [];
     const request = this.session.request_http('GET',
       'https://alpha.wallhaven.cc/search?' + OPTIONS.toParameterString() + '&page=' + page);
@@ -186,6 +201,7 @@ const Provider = new Lang.Class({
         ids = matches.map(function (elem) {
           return elem.match(/\d+/);
         });
+        Utils.debug('ids: ' + ids, this.__name__);
       }
 
       if (callback) {
@@ -195,6 +211,7 @@ const Provider = new Lang.Class({
   },
 
   _downloadWallpaper: function (id, callback) {
+    Utils.debug('_downloadWallpaper: ' + id, this.__name__);
     this._requestWallpaperType(id, Lang.bind(this, function (type) {
       if (type) {
         const request = this.session.request_http('GET', 'https://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-' + id + '.' + type);
@@ -204,14 +221,15 @@ const Provider = new Lang.Class({
         if (!outputFile.query_exists(null)) {
           const outputStream = outputFile.create(Gio.FileCreateFlags.NONE, null);
 
-          this.session.queue_message(message, function (session, message) {
+          this.session.queue_message(message, Lang.bind(this, function (session, message) {
             const contents = message.response_body.flatten().get_as_bytes();
             outputStream.write_bytes(contents, null);
             outputStream.close(null);
+            Utils.debug('Downloaded: ' + id, this.__name__);
             if (callback) {
               callback(outputFile.get_parse_name());
             }
-          });
+          }));
         }
       } else {
         if (callback) {
@@ -222,6 +240,7 @@ const Provider = new Lang.Class({
   },
 
   _requestWallpaperType: function (id, callback) {
+    Utils.debug('_requestWallpaperType: ' + id, this.__name__);
     const request = this.session.request_http('GET', 'https://alpha.wallhaven.cc/wallpaper/' + id);
     const message = request.get_message();
     this.session.queue_message(message, function (session, message) {

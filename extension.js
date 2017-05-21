@@ -29,7 +29,7 @@ function init() {
 
 function enable() {
   panelEntry = new WallpaperChangerEntry();
-  Main.panel.addToStatusArea("wallpaper-changer-menu", panelEntry);
+  Main.panel.addToStatusArea('wallpaper-changer-menu', panelEntry);
 }
 
 function disable() {
@@ -38,17 +38,24 @@ function disable() {
 
 const WallpaperChangerEntry = new Lang.Class({
   Extends: PanelMenu.Button,
-  Name: "WallpaperChangerEntry",
+  Name: 'WallpaperChangerEntry',
 
   _init: function () {
-    this.parent(0, "WallpaperChangerEntry");
+    this.parent(0, 'WallpaperChangerEntry');
 
     this.settings = Utils.getSettings();
-    this._applyProvider();
-    this._applyTimer();
     this.settings.connect('changed::minutes', Lang.bind(this, this._applyTimer));
     this.settings.connect('changed::hours', Lang.bind(this, this._applyTimer));
     this.settings.connect('changed::provider', Lang.bind(this, this._applyProvider));
+    
+    this.settings.connect('changed::debug', Lang.bind(this, function () {
+      Utils.DEBUG = this.settings.get_boolean('debug');
+    }));
+    Utils.DEBUG = this.settings.get_boolean('debug');
+    Utils.debug('_init', this.__name__);
+
+    this._applyProvider();
+    this._applyTimer();
 
     const icon = new St.Icon({
       icon_name: 'preferences-desktop-wallpaper-symbolic',
@@ -73,10 +80,12 @@ const WallpaperChangerEntry = new Lang.Class({
   },
 
   _openSettings: function () {
-    Util.spawn(["gnome-shell-extension-prefs", Self.uuid]);
+    Utils.debug('_openSettings', this.__name__);
+    Util.spawn(['gnome-shell-extension-prefs', Self.uuid]);
   },
 
   _applyProvider: function () {
+    Utils.debug('_applyProvider', this.__name__);
     this.provider = Utils.getProvider(this.settings.get_string('provider'));
     this.provider.next(this._setWallpaper);
     this.provider.connect('wallpapers-changed', Lang.bind(this, function (provider) {
@@ -88,6 +97,7 @@ const WallpaperChangerEntry = new Lang.Class({
   },
 
   _applyTimer: function () {
+    Utils.debug('_applyTimer', this.__name__);
     TIMER.minutes = this.settings.get_int('minutes');
     TIMER.hours = this.settings.get_int('hours');
 
@@ -95,11 +105,13 @@ const WallpaperChangerEntry = new Lang.Class({
   },
 
   _resetTimer: function () {
+    Utils.debug('_resetTimer', this.__name__);
     if (this.timer) {
       GLib.Source.remove(this.timer);
     }
 
     if (TIMER.toSeconds() > 0) {
+      Utils.debug('set to ' + TIMER.toSeconds(), this.__name__);
       this.timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT,
         TIMER.toSeconds(),
         Lang.bind(this, function () {
@@ -113,10 +125,12 @@ const WallpaperChangerEntry = new Lang.Class({
   },
 
   _setWallpaper: function (path) {
-    const background_setting = new Gio.Settings({ schema: "org.gnome.desktop.background" });
+    Utils.debug('_setWallpaper', this.__name__);
+    const background_setting = new Gio.Settings({ schema: 'org.gnome.desktop.background' });
 
-    if (background_setting.is_writable("picture-uri")) {
-      if (background_setting.set_string("picture-uri", "file://" + path)) {
+    if (background_setting.is_writable('picture-uri')) {
+      if (background_setting.set_string('picture-uri', 'file://' + path)) {
+        Utils.debug(path, this.__name__);
         Gio.Settings.sync();
       }
     }

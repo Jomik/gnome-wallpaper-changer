@@ -7,10 +7,10 @@ const Self = imports.misc.extensionUtils.getCurrentExtension();
 const Utils = Self.imports.utils;
 const WallpaperProvider = Self.imports.wallpaperProvider;
 
-let WALLPAPER_PATH = "/usr/share/backgrounds/gnome";
+let WALLPAPER_PATH = '/usr/share/backgrounds/gnome';
 
 const Provider = new Lang.Class({
-  Name: "Folder",
+  Name: 'Folder',
   Extends: WallpaperProvider.Provider,
 
   _init: function () {
@@ -28,6 +28,7 @@ const Provider = new Lang.Class({
   },
 
   destroy: function () {
+    this.parent();
     if (this.monitor) {
       this.monitor.cancel();
     }
@@ -35,11 +36,13 @@ const Provider = new Lang.Class({
 
   _applySettings: function () {
     WALLPAPER_PATH = this.settings.get_string('wallpaper-path');
+    Utils.debug('_applySettings', this.__name__);
 
     this._setupWallpaperDir();
   },
 
   _setupWallpaperDir: function () {
+    Utils.debug('_setupWallpaperDir', this.__name__);
     if (this.monitor) {
       this.monitor.cancel();
     }
@@ -53,9 +56,10 @@ const Provider = new Lang.Class({
   },
 
   _wallpapersChanged: function (monitor, file, other_file, event_type) {
+    Utils.debug('_wallpapersChanged ' + file.get_basename() + ' event: ' + event_type, this.__name__);
     if (!this.dir.query_exists(null)) {
       monitor.cancel();
-      throw new Error("No directory : " + this.dir.get_path());
+      throw new Error('No directory : ' + this.dir.get_path());
     }
 
     switch (event_type) {
