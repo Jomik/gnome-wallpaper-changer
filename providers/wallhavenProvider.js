@@ -46,9 +46,10 @@ const Provider = new Lang.Class({
 
   next: function (callback) {
     const newWallpaper = Lang.bind(this, function () {
-      this._deleteWallpaper(this.currentWallpaper);
+      const oldWallpaper = this.currentWallpaper;
       this.currentWallpaper = this.wallpapers.shift();
       callback(this.currentWallpaper);
+      this._deleteWallpaper(oldWallpaper);
     });
 
     if (this.wallpapers.length === 0) {
