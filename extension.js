@@ -90,6 +90,7 @@ const WallpaperChangerEntry = new Lang.Class({
     this.provider.next(this._setWallpaper);
     this.provider.connect('wallpapers-changed', Lang.bind(this, function (provider) {
       if (provider === this.provider) {
+        Utils.debug('wallpapers-changed', this.__name__);
         this.provider.next(this._setWallpaper);
         this._resetTimer();
       }

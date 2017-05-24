@@ -8,6 +8,8 @@ const Self = imports.misc.extensionUtils.getCurrentExtension();
 const Utils = Self.imports.utils;
 const WallpaperProvider = Self.imports.wallpaperProvider;
 
+const SETTINGS_DELAY = 5;
+
 const OPTIONS = {
   query: '',
   categories: '100',
@@ -136,7 +138,7 @@ const Provider = new Lang.Class({
     }
     this.settingsTimer = null;
 
-    OPTIONS.query = this.settings.get_string('query');
+    OPTIONS.query = this.settings.get_string('query').replace(/ /g, '+');
 
     OPTIONS.categories = (this.settings.get_boolean('category-general') ? '1' : '0')
       + (this.settings.get_boolean('category-anime') ? '1' : '0')
@@ -152,7 +154,7 @@ const Provider = new Lang.Class({
     OPTIONS.order = this.settings.get_string('order');
 
     this.settingsTimer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT,
-      3,
+      SETTINGS_DELAY,
       Lang.bind(this, function () {
         this._resetWallpapers();
         return false;
@@ -184,6 +186,7 @@ const Provider = new Lang.Class({
   _requestWallpapersOnPage: function (page, callback, no_match_callback) {
     Utils.debug('_requestWallpapersOnPage@' + page, this.__name__);
     let ids = [];
+    Utils.debug('Requesting: https://alpha.wallhaven.cc/search?' + OPTIONS.toParameterString() + '&page=' + page, this.__name__);
     const request = this.session.request_http('GET',
       'https://alpha.wallhaven.cc/search?' + OPTIONS.toParameterString() + '&page=' + page);
     const message = request.get_message();
