@@ -16,6 +16,7 @@ const Utils = Self.imports.utils;
 const TIMER = {
   minutes: 0,
   hours: 0,
+  running: true,
 
   toSeconds: function () {
     return this.minutes * 60 + this.hours * 3600
@@ -47,7 +48,7 @@ const WallpaperChangerEntry = new Lang.Class({
     this.settings.connect('changed::minutes', Lang.bind(this, this._applyTimer));
     this.settings.connect('changed::hours', Lang.bind(this, this._applyTimer));
     this.settings.connect('changed::provider', Lang.bind(this, this._applyProvider));
-    
+
     this.settings.connect('changed::debug', Lang.bind(this, function () {
       Utils.DEBUG = this.settings.get_boolean('debug');
     }));
@@ -65,15 +66,37 @@ const WallpaperChangerEntry = new Lang.Class({
 
     // Construct items
     const nextItem = new PopupMenu.PopupMenuItem('Next Wallpaper');
-    const settingsMenuItem = new PopupMenu.PopupMenuItem('Settings');
+    const settingsItem = new PopupMenu.PopupMenuItem('Settings');
+    const pauseItem = new PopupMenu.PopupMenuItem('Pause');
+    const unpauseItem = new PopupMenu.PopupMenuItem('Unpause');
 
     // Add items to menu
     this.menu.addMenuItem(nextItem);
-    this.menu.addMenuItem(settingsMenuItem);
+    this.menu.addMenuItem(settingsItem);
+    this.menu.addMenuItem(pauseItem);
+    this.menu.addMenuItem(unpauseItem);
+    unpauseItem.actor.visible = false;
 
     // Bind events
-    settingsMenuItem.connect('activate', Lang.bind(this, this._openSettings));
+    settingsItem.connect('activate', Lang.bind(this, this._openSettings));
     nextItem.connect('activate', Lang.bind(this, function () {
+      this.provider.next(this._setWallpaper);
+      this._resetTimer();
+    }));
+    pauseItem.connect('activate', Lang.bind(this, function () {
+      Utils.debug('pause');
+      TIMER.running = false;
+      pauseItem.actor.visible = false;
+      unpauseItem.actor.visible = true;
+
+      this._resetTimer();
+    }));
+    unpauseItem.connect('activate', Lang.bind(this, function () {
+      Utils.debug('unpause');
+      TIMER.running = true;
+      pauseItem.actor.visible = true;
+      unpauseItem.actor.visible = false;
+
       this.provider.next(this._setWallpaper);
       this._resetTimer();
     }));
@@ -111,7 +134,7 @@ const WallpaperChangerEntry = new Lang.Class({
       GLib.Source.remove(this.timer);
     }
 
-    if (TIMER.toSeconds() > 0) {
+    if (TIMER.running && TIMER.toSeconds() > 0) {
       Utils.debug('set to ' + TIMER.toSeconds(), this.__name__);
       this.timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT,
         TIMER.toSeconds(),
