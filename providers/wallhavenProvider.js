@@ -171,7 +171,8 @@ const Provider = new Lang.Class({
 
   _deleteWallpaper: function (wallpaper) {
     Utils.debug('_deleteWallpaper ' + wallpaper, this.__name__);
-    if (wallpaper) {
+    if (this.currentWallpaper !== wallpaper) {
+      Utils.debug('Deleting... ', this.__name__);
       Gio.File.new_for_path(wallpaper).delete_async(GLib.PRIORITY_DEFAULT, null,
         Lang.bind(this, function (file, res) {
           try {
@@ -233,6 +234,10 @@ const Provider = new Lang.Class({
               callback(outputFile.get_parse_name());
             }
           }));
+        } else {
+          if (callback) {
+            callback(outputFile.get_parse_name());
+          }
         }
       } else {
         if (callback) {
