@@ -67,39 +67,19 @@ const WallpaperChangerEntry = new Lang.Class({
     // Construct items
     const nextItem = new PopupMenu.PopupMenuItem('Next Wallpaper');
     const settingsItem = new PopupMenu.PopupMenuItem('Settings');
+    const separatorItem = new PopupMenu.PopupSeparatorMenuItem('');
     const pauseItem = new PopupMenu.PopupMenuItem('Pause');
-    const unpauseItem = new PopupMenu.PopupMenuItem('Unpause');
 
     // Add items to menu
     this.menu.addMenuItem(nextItem);
-    this.menu.addMenuItem(settingsItem);
     this.menu.addMenuItem(pauseItem);
-    this.menu.addMenuItem(unpauseItem);
-    unpauseItem.actor.visible = false;
+    this.menu.addMenuItem(separatorItem);
+    this.menu.addMenuItem(settingsItem);
 
     // Bind events
     settingsItem.connect('activate', Lang.bind(this, this._openSettings));
-    nextItem.connect('activate', Lang.bind(this, function () {
-      this.provider.next(this._setWallpaper);
-      this._resetTimer();
-    }));
-    pauseItem.connect('activate', Lang.bind(this, function () {
-      Utils.debug('pause');
-      TIMER.running = false;
-      pauseItem.actor.visible = false;
-      unpauseItem.actor.visible = true;
-
-      this._resetTimer();
-    }));
-    unpauseItem.connect('activate', Lang.bind(this, function () {
-      Utils.debug('unpause');
-      TIMER.running = true;
-      pauseItem.actor.visible = true;
-      unpauseItem.actor.visible = false;
-
-      this.provider.next(this._setWallpaper);
-      this._resetTimer();
-    }));
+    nextItem.connect('activate', Lang.bind(this, this._nextWallpaper));
+    pauseItem.connect('activate', Lang.bind(this, this._pauseToggle));
   },
 
   _openSettings: function () {
@@ -107,15 +87,26 @@ const WallpaperChangerEntry = new Lang.Class({
     Util.spawn(['gnome-shell-extension-prefs', Self.uuid]);
   },
 
+  _nextWallpaper: function () {
+    this.provider.next(this._setWallpaper);
+    this._resetTimer();
+  },
+
+  _pauseToggle: function () {
+    TIMER.running = !TIMER.running;
+    Utils.debug('pause - timer running = ' + TIMER.running);
+    pauseItem.label.set_text(TIMER.running ? 'Pause' : 'Unpause');
+    this._resetTimer();
+  },
+
   _applyProvider: function () {
     Utils.debug('_applyProvider', this.__name__);
     this.provider = Utils.getProvider(this.settings.get_string('provider'));
-    this.provider.next(this._setWallpaper);
+    this._nextWallpaper();
     this.provider.connect('wallpapers-changed', Lang.bind(this, function (provider) {
       if (provider === this.provider) {
         Utils.debug('wallpapers-changed', this.__name__);
-        this.provider.next(this._setWallpaper);
-        this._resetTimer();
+        this._nextWallpaper();
       }
     }));
   },
@@ -135,12 +126,13 @@ const WallpaperChangerEntry = new Lang.Class({
     }
 
     if (TIMER.running && TIMER.toSeconds() > 0) {
-      Utils.debug('set to ' + TIMER.toSeconds(), this.__name__);
+      Utils.debug('Set to ' + TIMER.toSeconds(), this.__name__);
       this.timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT,
         TIMER.toSeconds(),
         Lang.bind(this, function () {
-          this.provider.next(this._setWallpaper);
-          return true;
+          this._nextWallpaper();
+          this.timer = null;
+          return false;
         })
       );
     } else {
@@ -156,7 +148,11 @@ const WallpaperChangerEntry = new Lang.Class({
       if (background_setting.set_string('picture-uri', 'file://' + path)) {
         Utils.debug(path, this.__name__);
         Gio.Settings.sync();
+      } else {
+        Utils.debug('Unable to set wallpaper', this.__name__)
       }
+    } else {
+      Utils.debug('Can\'t write to org.gnome.desktop.background', this.__name__);
     }
   }
 });

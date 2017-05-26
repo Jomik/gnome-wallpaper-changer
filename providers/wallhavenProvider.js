@@ -60,45 +60,48 @@ const Provider = new Lang.Class({
       }));
     });
 
-    if (this.wallpapers.length === 0) {
-      Utils.debug('get new wallpapers', this.__name__);
-      let called = false;
-      this._requestWallpapersOnPage(++this.page, Lang.bind(this, function (ids) {
-        if (ids.length > 0) {
-          Utils.debug('new ids: ' + ids.length, this.__name__);
-          const oldWallpapers = Utils.getFolderWallpapers(this.dir);
+    let called = false;
+    const oldWallpapers = Utils.getFolderWallpapers(this.dir);
 
-          let called = false;
-          ids.forEach(Lang.bind(this, function (id) {
-            this._downloadWallpaper(id, Lang.bind(this, function (path) {
-              Utils.debug('_downloadWallpaper callback: ' + path, this.__name__);
-              if (path) {
-                if (!called) {
-                  Utils.debug('first call', this.__name__);
-                  called = true;
-                  this.currentWallpaper = path;
-                  callback(this.currentWallpaper);
+    function download(id) {
+      this._downloadWallpaper(id, Lang.bind(this, function (path) {
+        Utils.debug('_downloadWallpaper callback: ' + path, this.__name__);
+        if (path) {
+          if (!called) {
+            Utils.debug('first call', this.__name__);
+            called = true;
+            this.currentWallpaper = path;
+            callback(this.currentWallpaper);
 
-                  oldWallpapers.forEach(Lang.bind(this, function (wallpaper) {
-                    this._deleteWallpaper(wallpaper);
-                  }));
-                } else {
-                  Utils.debug('adding', this.__name__);
-                  this.wallpapers.push(path);
-                }
-              }
+            oldWallpapers.forEach(Lang.bind(this, function (wallpaper) {
+              this._deleteWallpaper(wallpaper);
             }));
-          }));
-        } else if (this.page > 1) {
-          Utils.debug('trying page 0', this.__name__);
-          this.page = 0;
-          this.next(callback);
-        } else {
-          global.log('Couldn\'t get new wallpapers, reusing old.');
-          this.wallpapers = Utils.getFolderWallpapers(this.dir);
-          newWallpaper();
+          } else {
+            Utils.debug('adding', this.__name__);
+            this.wallpapers.push(path);
+          }
         }
       }));
+    }
+
+    function downloadAll(ids) {
+      if (ids.length > 0) {
+        Utils.debug('new ids: ' + ids.length, this.__name__);
+        ids.forEach(Lang.bind(this, download));
+      } else if (this.page > 1) {
+        Utils.debug('trying page 0', this.__name__);
+        this.page = 0;
+        this.next(callback);
+      } else {
+        global.log('Couldn\'t get new wallpapers, reusing old.');
+        this.wallpapers = oldWallpapers;
+        newWallpaper();
+      }
+    }
+
+    if (this.wallpapers.length === 0) {
+      Utils.debug('get new wallpapers', this.__name__);
+      this._requestWallpapersOnPage(++this.page, Lang.bind(this, downloadAll));
     } else {
       newWallpaper()
     }
@@ -185,15 +188,16 @@ const Provider = new Lang.Class({
   },
 
   _requestWallpapersOnPage: function (page, callback, no_match_callback) {
-    Utils.debug('_requestWallpapersOnPage@' + page, this.__name__);
+    Utils.debug('_requestWallpapersOnPage, page: ' + page, this.__name__);
     let ids = [];
     Utils.debug('Requesting: https://alpha.wallhaven.cc/search?' + OPTIONS.toParameterString() + '&page=' + page, this.__name__);
     const request = this.session.request_http('GET',
       'https://alpha.wallhaven.cc/search?' + OPTIONS.toParameterString() + '&page=' + page);
     const message = request.get_message();
+    
     this.session.queue_message(message, Lang.bind(this, function (session, message) {
       if (message.status_code != Soup.KnownStatusCode.OK) {
-        global.log('_requestWallpapersOnPage error: ' + message.status_code);
+        Utils.debug('_requestWallpapersOnPage error: ' + message.status_code, this.__name__);
         if (callback) {
           callback(ids);
         }
@@ -251,9 +255,9 @@ const Provider = new Lang.Class({
     Utils.debug('_requestWallpaperType: ' + id, this.__name__);
     const request = this.session.request_http('GET', 'https://alpha.wallhaven.cc/wallpaper/' + id);
     const message = request.get_message();
-    this.session.queue_message(message, function (session, message) {
+    this.session.queue_message(message, Lang.bind(this, function (session, message) {
       if (message.status_code != Soup.KnownStatusCode.OK) {
-        global.log('_requestWallpaperType error: ' + message.status_code);
+        Utils.debug('_requestWallpaperType error: ' + message.status_code, this.__name__);
         if (callback) {
           callback(null);
         }
@@ -264,6 +268,6 @@ const Provider = new Lang.Class({
       if (callback) {
         callback(type);
       }
-    });
+    }));
   }
 });
