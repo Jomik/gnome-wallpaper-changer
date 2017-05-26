@@ -37,11 +37,15 @@ const Provider = new Lang.Class({
 
   _init: function () {
     this.parent();
-    this.settings = Utils.getSettings(this);
-    this.session = new Soup.Session();
     this.page = 0;
     this.dir = Utils.makeDirectory(Self.path + '/' + this.__name__);
     this.wallpapers = Utils.getFolderWallpapers(this.dir);
+
+    this.session = new Soup.Session();
+    const cookiejar = new Soup.CookieJarDB({ filename: this.dir.get_child('cookies.sql').get_parse_name() });
+    Soup.Session.prototype.add_feature.call(this.session, cookiejar);
+
+    this.settings = Utils.getSettings(this);
     this.settings.connect('changed', Lang.bind(this, this._applySettings));
     this._applySettings();
   },
@@ -156,6 +160,20 @@ const Provider = new Lang.Class({
     OPTIONS.sorting = this.settings.get_string('sorting');
     OPTIONS.order = this.settings.get_string('order');
 
+    if (this.settings.get_boolean('purity-nsfw')) {
+      /*
+      this._requestToken(Lang.bind(this, function (token) {
+        this._requestLogin('user', 'pass', token, function (bool) {
+          if (bool) {
+            Utils.debug("SUCCESS", this.__name__);
+          } else {
+            Utils.debug("FAILURE", this.__name__);
+          }
+        });
+      }));
+      */
+    }
+
     this.settingsTimer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT,
       SETTINGS_DELAY,
       Lang.bind(this, function () {
@@ -189,13 +207,13 @@ const Provider = new Lang.Class({
 
   _requestWallpapersOnPage: function (page, callback, no_match_callback) {
     Utils.debug('_requestWallpapersOnPage, page: ' + page, this.__name__);
-    let ids = [];
     Utils.debug('Requesting: https://alpha.wallhaven.cc/search?' + OPTIONS.toParameterString() + '&page=' + page, this.__name__);
     const request = this.session.request_http('GET',
       'https://alpha.wallhaven.cc/search?' + OPTIONS.toParameterString() + '&page=' + page);
     const message = request.get_message();
-    
+
     this.session.queue_message(message, Lang.bind(this, function (session, message) {
+      let ids = [];
       if (message.status_code != Soup.KnownStatusCode.OK) {
         Utils.debug('_requestWallpapersOnPage error: ' + message.status_code, this.__name__);
         if (callback) {
@@ -267,6 +285,54 @@ const Provider = new Lang.Class({
       const type = message.response_body.data.match(/\/\/wallpapers.wallhaven.cc\/wallpapers\/full\/wallhaven-\d+.(\w+)/i)[1];
       if (callback) {
         callback(type);
+      }
+    }));
+  },
+
+  _requestToken: function (callback) {
+    Utils.debug('_requestToken', this.__name__);
+    const request = this.session.request_http('GET', 'https://alpha.wallhaven.cc/auth/login');
+    const message = request.get_message();
+    this.session.queue_message(message, Lang.bind(this, function (session, message) {
+      let token = null;
+      if (message.status_code != Soup.KnownStatusCode.OK) {
+        Utils.debug('_requestToken error: ' + message.status_code, this.__name__);
+        if (callback) {
+          callback(token);
+        }
+        return;
+      }
+
+      token = message.response_body.data.match(/<input name="_token" type="hidden" value="(\w+)">/);
+      if (token) {
+        token = token[1];
+      }
+      Utils.debug('token: ' + token, this.__name__);
+
+      if (callback) {
+        callback(token);
+      }
+    }));
+  },
+
+  _requestLogin: function (username, password, token, callback) {
+    Utils.debug('_requestLogin', this.__name__);
+    const request = this.session.request_http('POST', 'https://alpha.wallhaven.cc/auth/login');
+    const message = request.get_message();
+    const body = '_token=' + token + '&username=' + username + '&password=' + password;
+    message.set_request('multipart/form-data', Soup.MemoryUse.COPY, body);
+    this.session.queue_message(message, Lang.bind(this, function (session, message) {
+      if (message.status_code != Soup.KnownStatusCode.OK) {
+        Utils.debug('_requestLogin error: ' + message.status_code, this.__name__);
+        if (callback) {
+          callback(false);
+        }
+        return;
+      }
+
+      Utils.debug(message.response_body.data, this.__name__);
+      if (callback) {
+        callback(true);
       }
     }));
   }

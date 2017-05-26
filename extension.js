@@ -88,7 +88,7 @@ const WallpaperChangerEntry = new Lang.Class({
   },
 
   _nextWallpaper: function () {
-    this.provider.next(this._setWallpaper);
+    this.provider.next(Lang.bind(this, this._setWallpaper));
     this._resetTimer();
   },
 
