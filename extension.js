@@ -79,7 +79,7 @@ const WallpaperChangerEntry = new Lang.Class({
     // Bind events
     settingsItem.connect('activate', Lang.bind(this, this._openSettings));
     nextItem.connect('activate', Lang.bind(this, this._nextWallpaper));
-    pauseItem.connect('activate', Lang.bind(this, this._pauseToggle));
+    pauseItem.connect('activate', Lang.bind(this, this._pauseToggle(pauseItem)));
   },
 
   _openSettings: function () {
@@ -92,11 +92,13 @@ const WallpaperChangerEntry = new Lang.Class({
     this._resetTimer();
   },
 
-  _pauseToggle: function () {
-    TIMER.running = !TIMER.running;
-    Utils.debug('pause - timer running = ' + TIMER.running);
-    pauseItem.label.set_text(TIMER.running ? 'Pause' : 'Unpause');
-    this._resetTimer();
+  _pauseToggle: function (pauseItem) {
+    return function () {
+      TIMER.running = !TIMER.running;
+      Utils.debug('pause - timer running = ' + TIMER.running);
+      pauseItem.label.set_text(TIMER.running ? 'Pause' : 'Unpause');
+      this._resetTimer();
+    }
   },
 
   _applyProvider: function () {
@@ -105,7 +107,7 @@ const WallpaperChangerEntry = new Lang.Class({
     this._nextWallpaper();
     this.provider.connect('wallpapers-changed', Lang.bind(this, function (provider) {
       if (provider === this.provider) {
-        Utils.debug('wallpapers-changed', this.__name__);
+        Utils.debug('wallpapers-changed signal received', this.__name__);
         this._nextWallpaper();
       }
     }));
