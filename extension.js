@@ -132,8 +132,8 @@ const WallpaperChangerEntry = new Lang.Class({
       this.timer = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT,
         TIMER.toSeconds(),
         Lang.bind(this, function () {
-          this._nextWallpaper();
           this.timer = null;
+          this._nextWallpaper();
           return false;
         })
       );
