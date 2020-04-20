@@ -1,3 +1,5 @@
+Unmaintained, as I do not use GNOME currently. If you are willing to maintain this, please reach out to me.
+
 # gnome-wallpaper-changer
 GNOME extension to change wallpaper from providers
 
